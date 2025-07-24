@@ -1,35 +1,61 @@
-# Project Setup Guide
+# Project Operation Guide
 
-## Step 1: Set Up RabbitMQ
+## Overview
 
-Use Docker Compose to start RabbitMQ with the management UI.  
-Access the UI at http://localhost:15672.  
+This project demonstrates an event-driven system using RabbitMQ (message queue), Keycloak (identity provider), and Node.js (producer/consumer), all orchestrated with Docker Compose.
 
-## Step 2: Build the Node.js Producer and Consumer
+---
 
-Write simple Node.js scripts using `amqplib` to send (producer) and receive (consumer) messages from the queue.  
-The consumer will print received messages and validate tokens.
+## 1. Prerequisites
 
-## Step 3: Deploy Keycloak
+- Docker & Docker Compose installed
 
-Add Keycloak to the Docker Compose file.  
-The default realm and admin user are set up automatically.  
-The producer script will automatically request a JWT token from Keycloak using the admin user.
+---
 
-## Step 4: Validate JWT Tokens
+## 2. Start All Services
 
-The consumer uses Keycloak's token introspection endpoint to verify the validity of each token.  
+In the project root directory, run:
 
-## Step 5: Combine with Docker Compose
+```bash
+docker compose up --build
+```
 
-Add all services (RabbitMQ, Keycloak, Node.js producer, Node.js consumer) to a single Docker Compose file.  
-Ensure everything runs with one command.
+This will start:
+- **RabbitMQ** (message queue, management UI at [http://localhost:15672](http://localhost:15672), user: guest/guest)
+- **Keycloak** (identity provider, admin UI at [http://localhost:8080](http://localhost:8080), user: admin/admin)
+- **Producer** (Node.js service, sends a message with a JWT token and then exits)
+- **Consumer** (Node.js service, receives and validates messages)
 
-## Step 6: Prepare for Submission
+---
 
-Make sure the repository includes:
+## 3. How It Works
 
-- docker-compose.yml
-- Node.js producer and consumer scripts
-- README.md
-- Final slides 
+- **Producer** automatically requests a token from Keycloak using the admin user, then sends a message (with token) to RabbitMQ.
+- **Consumer** receives the message from RabbitMQ, validates the token with Keycloak, and prints the result in the terminal.
+
+---
+
+## 4. Notes
+
+- The message queue is created automatically by the code.
+- All authentication and token validation is handled via Keycloak.
+- Producer currently sends one message per run and then exits. To send more messages, restart the producer service.
+
+---
+
+## 5. Project Structure
+
+- `docker-compose.yml` — Orchestrates all services
+- `producer/` — Node.js producer code
+- `consumer/` — Node.js consumer code
+- `README.md` or `Project_Operation_Guide.md` — This guide
+
+---
+
+## 6. Limitations (Current Version)
+
+- No web UI for user login (producer uses admin credentials automatically)
+- No role-based access control (all messages are accepted if the token is valid)
+- Producer is not a persistent service
+
+---
