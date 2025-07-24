@@ -3,26 +3,26 @@
 ## Step 1: Set Up RabbitMQ
 
 Use Docker Compose to start RabbitMQ with the management UI.  
-Access the UI at http://localhost:****** and create a queue.
+Access the UI at http://localhost:15672.  
 
-## Step 2: Build the Python Consumer
+## Step 2: Build the Node.js Producer and Consumer
 
-Write a simple Python script using `pika` to receive messages from the queue and print them.
+Write simple Node.js scripts using `amqplib` to send (producer) and receive (consumer) messages from the queue.  
+The consumer will print received messages and validate tokens.
 
 ## Step 3: Deploy Keycloak
 
 Add Keycloak to the Docker Compose file.  
-Create a realm, client, and test users (admin and user).  
-Use Postman or a browser to log in and get a JWT token.
+The default realm and admin user are set up automatically.  
+The producer script will automatically request a JWT token from Keycloak using the admin user.
 
 ## Step 4: Validate JWT Tokens
 
-Use PyJWT in the Python consumer to verify tokens.  
-Only allow messages from users with the "admin" role.
+The consumer uses Keycloak's token introspection endpoint to verify the validity of each token.  
 
 ## Step 5: Combine with Docker Compose
 
-Add all services (RabbitMQ, Keycloak, Python consumer) to a single Docker Compose file.  
+Add all services (RabbitMQ, Keycloak, Node.js producer, Node.js consumer) to a single Docker Compose file.  
 Ensure everything runs with one command.
 
 ## Step 6: Prepare for Submission
@@ -30,7 +30,6 @@ Ensure everything runs with one command.
 Make sure the repository includes:
 
 - docker-compose.yml
-- Python consumer script
-- Keycloak setup instructions
+- Node.js producer and consumer scripts
 - README.md
 - Final slides 

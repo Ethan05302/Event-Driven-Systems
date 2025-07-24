@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.1
+    command: start-dev
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: unless-stopped
+
+  producer:
+    build: ./producer
+    depends_on:
+      - rabbitmq
+      - keycloak
+
+  consumer:
+    build: ./consumer
+    depends_on:
+      - rabbitmq
+      - keycloak 
