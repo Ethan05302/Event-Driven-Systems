@@ -66,9 +66,9 @@ app.post('/login', async (req, res) => {
     // Decode JWT and check roles
     const decoded = jwt.decode(token);
     const roles = decoded.realm_access?.roles || [];
-    if (!roles.includes('publisher')) {
-      console.log(`User ${username} login rejected: no publisher role.`);
-      return res.status(403).json({ error: 'You do not have the publisher role and cannot publish events.' });
+    if (!(roles.includes('admin') || roles.includes('publisher'))) {
+      console.log(`User ${username} login rejected: insufficient role.`);
+      return res.status(403).json({ error: 'You do not have permission to publish events.' });
     }
 
     // Send login event message to queue
@@ -76,6 +76,7 @@ app.post('/login', async (req, res) => {
       event: 'user.login',
       data: { 
         user: username, 
+        roles: roles, // 新增roles字段
         time: new Date().toISOString(),
         loginSuccess: true
       },
