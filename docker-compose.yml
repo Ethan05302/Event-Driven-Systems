@@ -9,6 +9,8 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    volumes:
+      - keycloak_data:/opt/keycloak/data
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -19,6 +21,8 @@ services:
 
   producer:
     build: ./producer
+    ports:
+      - "3000:3000"
     depends_on:
       - rabbitmq
       - keycloak
@@ -27,4 +31,7 @@ services:
     build: ./consumer
     depends_on:
       - rabbitmq
-      - keycloak 
+      - keycloak
+
+volumes:
+  keycloak_data: 
