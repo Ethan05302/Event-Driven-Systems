@@ -1,6 +1,7 @@
 const amqp = require('amqplib');
 const axios = require('axios');
 const express = require('express');
+const jwt = require('jsonwebtoken');
 
 const QUEUE = 'demo_queue';
 const app = express();
@@ -51,8 +52,8 @@ app.post('/login', async (req, res) => {
 
     // Get token from Keycloak
     const tokenResponse = await axios.post('http://keycloak:8080/realms/master/protocol/openid-connect/token', new URLSearchParams({
-      client_id: 'admin-cli',
-      client_secret: '5shnJhoJQxBRNvySdprfBJUzyAeRfwJz',
+      client_id: 'producer-service',
+      client_secret: '7Dz5LpSAxadrRI7uRIUbqO37zeoEJBbL',
       grant_type: 'password',
       username: username,
       password: password
@@ -62,11 +63,20 @@ app.post('/login', async (req, res) => {
 
     const token = tokenResponse.data.access_token;
 
+    // Decode JWT and check roles
+    const decoded = jwt.decode(token);
+    const roles = decoded.realm_access?.roles || [];
+    if (!(roles.includes('admin') || roles.includes('publisher'))) {
+      console.log(`User ${username} login rejected: insufficient role.`);
+      return res.status(403).json({ error: 'You do not have permission to publish events.' });
+    }
+
     // Send login event message to queue
     const msg = {
       event: 'user.login',
       data: { 
         user: username, 
+        roles: roles, // 新增roles字段
         time: new Date().toISOString(),
         loginSuccess: true
       },
